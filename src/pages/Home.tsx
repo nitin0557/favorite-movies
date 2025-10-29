@@ -216,7 +216,7 @@ const Home: React.FC = () => {
               className="max-sm:hidden"
               onClick={() => {
                 localStorage.clear();
-                window.location.href = "/dashboard";
+                window.location.href = "/";
               }}
             >
               Logout

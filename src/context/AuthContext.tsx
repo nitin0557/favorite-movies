@@ -28,11 +28,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    setToken(null);
-    setRole(null);
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    window.location.href = "/"; // force reload to login route
   };
+
+ 
 
   return (
     <AuthContext.Provider value={{ token, role, login, logout }}>
