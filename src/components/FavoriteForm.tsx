@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import type { Favorite } from "../types/types";
 import { v4 as uuidv4 } from "uuid";
 
-export default function FavoriteForm({
+export const FavoriteForm = React.memo(({
   form,
   setForm,
   onSubmit,
@@ -12,14 +12,14 @@ export default function FavoriteForm({
   setForm: React.Dispatch<React.SetStateAction<Favorite>>;
   onSubmit: (e?: React.FormEvent) => void;
   onCancel: () => void;
-}) {
+}) => {
 
-  const handleChange = (
+  const handleChange = useCallback((
     key: keyof Favorite,
     value: string | null | undefined
   ) => {
     setForm({ ...form, [key]: value });
-  };
+  },[]);
 
   return (
     <form
@@ -150,4 +150,4 @@ export default function FavoriteForm({
       </div>
     </form>
   );
-}
+})

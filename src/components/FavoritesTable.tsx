@@ -1,42 +1,29 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import type { Favorite } from "../types/types";
 
-interface FavoriteItem {
-  id: string;
-  title: string;
-  type: "Movie" | "TV Show";
-  director?: string | null;
-  budget?: string | null;
-  location?: string | null;
-  duration?: string | null;
-  yearOrTime?: string | null;
-  notes?: string | null;
-  posterUrl?: string | null;
-  createdAt?: string;
-}
 
 interface FavoriteTableProps {
-  filtered: FavoriteItem[];
-  openEdit: (item: FavoriteItem) => void;
-  requestDelete: (item: FavoriteItem) => void;
-  onRowClick?: (item: FavoriteItem) => void;
+  filtered: Favorite[];
+  openEdit: (item: Favorite) => void;
+  requestDelete: (item: Favorite) => void;
+  onRowClick?: (item: Favorite) => void;
 }
 
-const FavoriteTable: React.FC<FavoriteTableProps> = ({
+const FavoriteTable: React.FC<FavoriteTableProps> = React.memo(({
   filtered,
   openEdit,
   requestDelete,
   onRowClick,
 }) => {
-  const location = useLocation(); // ✅ Access current URL
-  const isMovieListPage = location.pathname === "/movieslist"; // ✅ check path
+  const location = useLocation();
+  const isMovieListPage = location.pathname === "/movieslist"; 
 
-  const handleRowClick = (e: React.MouseEvent, item: FavoriteItem) => {
-    // ✅ Prevent click if user clicked on Edit or Delete button
+  const handleRowClick = useCallback((e: React.MouseEvent, item: Favorite) => {
     const target = e.target as HTMLElement;
     if (target.closest("button")) return;
     if (onRowClick) onRowClick(item);
-  };
+  },[]);
 
   return (
     <div className="h-[60vh] overflow-auto">
@@ -108,6 +95,6 @@ const FavoriteTable: React.FC<FavoriteTableProps> = ({
       </table>
     </div>
   );
-};
+});
 
 export default FavoriteTable;

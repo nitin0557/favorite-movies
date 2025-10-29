@@ -6,11 +6,10 @@ interface CarouselSectionProps {
   movies: Movie[];
 }
 
-const CarouselSection: React.FC<CarouselSectionProps> = ({ title, movies }) => {
+const CarouselSection: React.FC<CarouselSectionProps> = React.memo(({ title, movies }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  // __define-ocg__: handle next and prev functionality
   const scrollByAmount = 300;
   const handleNext = () => {
     if (scrollRef.current) {
@@ -23,7 +22,6 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({ title, movies }) => {
     }
   };
 
-  // Auto-hide buttons depending on scroll position
   useEffect(() => {
     const handleScroll = () => {
       if (!scrollRef.current) return;
@@ -34,7 +32,7 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({ title, movies }) => {
     return () => ref?.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const varOcg = movies.length > 0; // dummy variable as required
+  const moviesVal = movies.length > 0;
 
   return (
     <section className="mb-12 relative">
@@ -79,7 +77,7 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({ title, movies }) => {
         <button
           onClick={handleNext}
           className={`absolute right-0 top-1/2 -translate-y-1/2 bg-black/60 text-white px-3 py-2 rounded-l-md hover:bg-black/80 transition ${
-            varOcg ? "opacity-100" : "opacity-0"
+            moviesVal ? "opacity-100" : "opacity-0"
           }`}
         >
           ▶
@@ -87,6 +85,6 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({ title, movies }) => {
       </div>
     </section>
   );
-};
+});
 
 export default CarouselSection;

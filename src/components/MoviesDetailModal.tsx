@@ -6,7 +6,7 @@ interface MovieDetailModalProps {
   onClose: () => void;
 }
 
-const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
+const MovieDetailModal: React.FC<MovieDetailModalProps> = React.memo(({
   movie,
   onClose,
 }) => {
@@ -48,6 +48,6 @@ const MovieDetailModal: React.FC<MovieDetailModalProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default MovieDetailModal;

@@ -15,11 +15,11 @@ interface SidebarProps {
   setSidebarOpen: (open: boolean) => void;
 }
 
-export default function Sidebar({
+export const Sidebar = React.memo(({
   routes,
   sidebarOpen,
   setSidebarOpen,
-}: SidebarProps) {
+}: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openMenus, setOpenMenus] = React.useState<{ [key: string]: boolean }>(
@@ -95,4 +95,4 @@ export default function Sidebar({
       <nav className="space-y-2 flex flex-col">{renderRoutes(routes)}</nav>
     </aside>
   );
-}
+})

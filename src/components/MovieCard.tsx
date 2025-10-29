@@ -1,9 +1,11 @@
+import React from "react";
+
 interface Props {
   movie: any;
   onAddFavorite: () => void;
 }
 
-export default function MovieCard({ movie, onAddFavorite }: Props) {
+export const  MovieCard = React.memo(({ movie, onAddFavorite }: Props) => {
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <img src={movie.posterUrl} alt={movie.title} className="w-full h-64 object-cover" />
@@ -20,4 +22,4 @@ export default function MovieCard({ movie, onAddFavorite }: Props) {
       </div>
     </div>
   );
-}
+})

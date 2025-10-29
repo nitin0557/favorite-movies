@@ -27,26 +27,17 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
-export const registerUser = async (
-  name: string,
-  email: string,
-  password: string
-) => {
+export const registerUser = async (userData: { name: string; email: string; password: string }) => {
   try {
     const res = await fetch(`${BASE_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(userData),
     });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Registration failed");
-    }
-
-    return res.json();
-  } catch (err: any) {
-    console.error("Register error:", err);
-    throw new Error(err.message || "Unable to register");
+    return await res.json();
+  } catch (error) {
+    console.error("Registration failed:", error);
+    return { message: "Failed to register" };
   }
 };

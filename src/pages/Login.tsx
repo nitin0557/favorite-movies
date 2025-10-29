@@ -1,14 +1,16 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { loginUser } from "../services/authApi";
+import { loginUser, registerUser } from "../services/authApi"; // 👈 Add register API
 
-export default function Login() {
+export default function AuthPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); // 👈 for signup
   const [error, setError] = useState("");
   const [agree, setAgree] = useState(false);
+  const [isSignup, setIsSignup] = useState(false); // 👈 toggle form
   const navigate = useNavigate();
 
   const handleSubmit = useCallback(
@@ -21,43 +23,63 @@ export default function Login() {
       }
 
       try {
-        const res = await loginUser(email, password);
-
-        if (res && res.token) {
-          login(res.token, res.role); // ✅ store in context
-
-          if (res.role === "Admin") {
-            navigate("/home");
-          } else {
+        if (isSignup) {
+          const res = await registerUser({ name, email, password });
+          if (res?.token) {
+            login(res.token, res.role || "User");
             navigate("/dashboard");
+          } else {
+            setError(res?.message || "Signup failed");
           }
         } else {
-          setError(res?.message || "Invalid credentials");
+          const res = await loginUser(email, password);
+          if (res?.token) {
+            login(res.token, res.role);
+            if (res.role === "Admin") navigate("/home");
+            else navigate("/dashboard");
+          } else {
+            setError(res?.message || "Invalid credentials");
+          }
         }
       } catch (err) {
         console.error(err);
         setError("Something went wrong. Please try again.");
       }
     },
-    [agree, email, password, login, navigate]
+    [agree, isSignup, name, email, password, login, navigate]
   );
 
   return (
     <div className="relative flex min-h-screen">
       <div className="w-full md:w-1/2 flex flex-col justify-center px-8 md:px-24 py-12 bg-customLight dark:bg-customDark dark:text-white">
         <h2 className="text-3xl font-bold mb-2 text-gray-800 dark:text-blue-500">
-          Welcome Back
+          {isSignup ? "Create Account" : "Welcome Back"}
         </h2>
-        <p className="text-gray-500 mb-6">Sign Up For Free</p>
+        <p className="text-gray-500 mb-6 cursor-pointer hover:underline" onClick={() => setIsSignup(!isSignup)}>
+          {isSignup ? "Already have an account? Login" : "Sign Up For Free"}
+        </p>
 
-        {/* 👉 Hints Section */}
-        <div className="mb-4 text-sm text-gray-600 dark:text-red-500">
-          <p>
-            <strong>User:</strong> nitin@example.com / <strong>nitin123</strong>
-          </p>
-        </div>
+        {/* 👉 Hints for quick testing */}
+        {!isSignup && (
+          <div className="mb-4 text-sm text-gray-600 dark:text-red-500">
+            <p>
+              <strong>User:</strong> nitin@example.com / <strong>nitin123</strong>
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignup && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-blue-500"
+            />
+          )}
+
           <input
             type="email"
             placeholder="Email"
@@ -92,7 +114,7 @@ export default function Login() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-semibold transition duration-200"
           >
-            Get Started
+            {isSignup ? "Register" : "Get Started"}
           </button>
         </form>
 
@@ -104,19 +126,12 @@ export default function Login() {
 
         <div className="flex flex-col space-y-3">
           <button className="w-full border border-gray-300 rounded-md py-2 text-gray-700 hover:bg-gray-100 transition">
-            Sign in with Google
+            Continue with Google
           </button>
           <button className="w-full border border-gray-300 rounded-md py-2 text-gray-700 hover:bg-gray-100 transition">
-            Sign in with Facebook
+            Continue with Facebook
           </button>
         </div>
-
-        <p className="mt-6 text-sm text-gray-600 text-center">
-          Already have an account?{" "}
-          <a href="/login" className="text-blue-600 hover:underline">
-            Login
-          </a>
-        </p>
       </div>
 
       <div className="hidden md:block md:w-1/2">

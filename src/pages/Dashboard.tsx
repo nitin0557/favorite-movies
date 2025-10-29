@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import KPI from "../components/KPI";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Header from "../components/Header";
-import type { Favorite } from "../types/types";
+import KPI from "../components/KPI";
 import FavoriteTable from "../components/FavoritesTable";
-import FavoriteForm from "../components/FavoriteForm";
+import { FavoriteForm } from "../components/FavoriteForm";
 import InfiniteScrollWrapper from "../components/InfiniteScrollWrapper";
-import { useMovieStore } from "../store/movieStore";
 import Modal from "../common/Modal";
+import { useMovieStore } from "../store/movieStore";
 import {
   createFavorite,
   deleteFavorite,
   updateFavorite,
 } from "../services/favoritesApi";
+import type { Favorite } from "../types/types";
 
 export default function Dashboard() {
   const token = localStorage.getItem("token");
@@ -29,21 +29,35 @@ export default function Dashboard() {
     notes: "",
     posterUrl: "",
   });
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const [modalState, setModalState] = useState<{
+    add: boolean;
+    edit: boolean;
+    delete: Favorite | null;
+    details: Favorite | null;
+  }>({
+    add: false,
+    edit: false,
+    delete: null,
+    details: null,
+  });
+
   const [editing, setEditing] = useState<Favorite | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<Favorite | null>(null);
-  const [selectedMovie, setSelectedMovie] = useState<Favorite | null>(null);
 
   useEffect(() => {
     if (token) fetchInitial(token);
   }, [fetchInitial, token]);
 
-  const totalFavorites = movies.length;
-  const moviesCount = movies.filter((f) => f.type === "Movie").length;
-  const showsCount = movies.filter((f) => f.type === "TV Show").length;
+  // 🧮 KPIs memoized
+  const stats = useMemo(() => {
+    const total = movies.length;
+    const moviesCount = movies.filter((f) => f.type === "Movie").length;
+    const showsCount = total - moviesCount;
+    return { total, moviesCount, showsCount };
+  }, [movies]);
 
-  const openAdd = () => {
+  // 🧠 Handlers
+  const resetForm = useCallback(() => {
     setForm({
       id: "",
       title: "",
@@ -54,53 +68,79 @@ export default function Dashboard() {
       notes: "",
       posterUrl: "",
     });
-    setIsAddOpen(true);
-  };
+  }, []);
 
-  const submitAdd = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    await createFavorite(token, form);
-    setIsAddOpen(false);
-    fetchInitial(token);
-  };
+  const openAdd = useCallback(() => {
+    resetForm();
+    setModalState((prev) => ({ ...prev, add: true }));
+  }, [resetForm]);
 
-  const submitEdit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!editing?.id) return;
-    await updateFavorite(token, editing.id, form);
-    setIsEditOpen(false);
-    setEditing(null);
-    fetchInitial(token);
-  };
+  const submitAdd = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (!token) return;
+      await createFavorite(token, form);
+      setModalState((prev) => ({ ...prev, add: false }));
+      fetchInitial(token);
+    },
+    [token, form, fetchInitial]
+  );
 
-  const confirmDeleteNow = async () => {
-    if (!confirmDelete?.id) return;
-    await deleteFavorite(token, confirmDelete.id);
-    setConfirmDelete(null);
-    fetchInitial(token);
-  };
-
-  const openEdit = (entry: Favorite) => {
+  const openEdit = useCallback((entry: Favorite) => {
     setEditing(entry);
     setForm(entry);
-    setIsEditOpen(true);
-  };
+    setModalState((prev) => ({ ...prev, edit: true }));
+  }, []);
 
-  const requestDelete = (entry: Favorite) => setConfirmDelete(entry);
+  const submitEdit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (!token || !editing?.id) return;
+      await updateFavorite(token, editing.id, form);
+      setEditing(null);
+      setModalState((prev) => ({ ...prev, edit: false }));
+      fetchInitial(token);
+    },
+    [token, editing, form, fetchInitial]
+  );
 
-  const handleRowClick = (item: Favorite) => {
-    setSelectedMovie(item);
-  };
+  const requestDelete = useCallback(
+    (entry: Favorite) =>
+      setModalState((prev) => ({ ...prev, delete: entry })),
+    []
+  );
+
+  const confirmDeleteNow = useCallback(async () => {
+    if (!token || !modalState.delete?.id) return;
+    await deleteFavorite(token, modalState.delete.id);
+    setModalState((prev) => ({ ...prev, delete: null }));
+    fetchInitial(token);
+  }, [token, modalState.delete, fetchInitial]);
+
+  const handleRowClick = useCallback(
+    (item: Favorite) =>
+      setModalState((prev) => ({ ...prev, details: item })),
+    []
+  );
+
+  const closeAllModals = useCallback(() => {
+    setModalState({
+      add: false,
+      edit: false,
+      delete: null,
+      details: null,
+    });
+  }, []);
 
   return (
-    <DashboardLayout occupiedCount={moviesCount} totalSeats={totalFavorites}>
+    <DashboardLayout occupiedCount={stats.moviesCount} totalSeats={stats.total}>
       <Header />
 
       <div className="p-4 sm:p-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KPI title="Total Favorites" value={totalFavorites} />
-          <KPI title="Movies" value={moviesCount} />
-          <KPI title="TV Shows" value={showsCount} />
+          <KPI title="Total Favorites" value={stats.total} />
+          <KPI title="Movies" value={stats.moviesCount} />
+          <KPI title="TV Shows" value={stats.showsCount} />
         </div>
 
         <div className="flex justify-end">
@@ -124,40 +164,40 @@ export default function Dashboard() {
               filtered={movies}
               openEdit={openEdit}
               requestDelete={requestDelete}
-              onRowClick={handleRowClick} // ✅ Correct type
+              onRowClick={handleRowClick}
             />
           </InfiniteScrollWrapper>
         )}
       </div>
 
-      {isAddOpen && (
-        <Modal title="Add New Favorite" onClose={() => setIsAddOpen(false)}>
+      {modalState.add && (
+        <Modal title="Add New Favorite" onClose={closeAllModals}>
           <FavoriteForm
             form={form}
             setForm={setForm}
             onSubmit={submitAdd}
-            onCancel={() => setIsAddOpen(false)}
+            onCancel={closeAllModals}
           />
         </Modal>
       )}
 
-      {isEditOpen && (
-        <Modal title="Edit Favorite" onClose={() => setIsEditOpen(false)}>
+      {modalState.edit && (
+        <Modal title="Edit Favorite" onClose={closeAllModals}>
           <FavoriteForm
             form={form}
             setForm={setForm}
             onSubmit={submitEdit}
-            onCancel={() => setIsEditOpen(false)}
+            onCancel={closeAllModals}
           />
         </Modal>
       )}
 
-      {confirmDelete && (
-        <Modal title="Confirm Delete" onClose={() => setConfirmDelete(null)}>
-          <p>Are you sure you want to delete “{confirmDelete.title}”?</p>
+      {modalState.delete && (
+        <Modal title="Confirm Delete" onClose={closeAllModals}>
+          <p>Are you sure you want to delete “{modalState.delete.title}”?</p>
           <div className="mt-4 flex justify-end gap-2">
             <button
-              onClick={() => setConfirmDelete(null)}
+              onClick={closeAllModals}
               className="px-4 py-2 border rounded"
             >
               Cancel
@@ -172,23 +212,23 @@ export default function Dashboard() {
         </Modal>
       )}
 
-      {selectedMovie && (
-        <Modal title="Movie Details" onClose={() => setSelectedMovie(null)}>
+      {modalState.details && (
+        <Modal title="Movie Details" onClose={closeAllModals}>
           <div className="space-y-2">
             <p>
-              <strong>Title:</strong> {selectedMovie.title}
+              <strong>Title:</strong> {modalState.details.title}
             </p>
             <p>
-              <strong>Type:</strong> {selectedMovie.type}
+              <strong>Type:</strong> {modalState.details.type}
             </p>
-            {selectedMovie.director && (
+            {modalState.details.director && (
               <p>
-                <strong>Director:</strong> {selectedMovie.director}
+                <strong>Director:</strong> {modalState.details.director}
               </p>
             )}
-            {selectedMovie.yearOrTime && (
+            {modalState.details.yearOrTime && (
               <p>
-                <strong>Year:</strong> {selectedMovie.yearOrTime}
+                <strong>Year:</strong> {modalState.details.yearOrTime}
               </p>
             )}
           </div>

@@ -22,12 +22,10 @@ export default function MoviesList() {
   const moviesCount = movies.filter((f) => f.type === "Movie").length;
   const totalFavorites = movies.length;
 
-  // ✅ Fetch initial movies
   useEffect(() => {
     fetchInitial(localStorage.getItem("token"));
   }, [fetchInitial]);
 
-  // ✅ Filter + Sort
   let filteredMovies = filterType
     ? movies.filter((m) => m.type === filterType)
     : movies;
