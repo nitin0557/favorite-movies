@@ -22,12 +22,6 @@ export default function DashboardLayout({
 }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const showSeatOccupancy = location.pathname === "/seattracking";
-
-  const data = [
-    { name: "Occupied", value: occupiedCount },
-    { name: "Free", value: totalSeats - occupiedCount },
-  ];
 
   const routes: RouteItem[] = [
     { path: "/home", label: "Home" },

@@ -15,7 +15,6 @@ export default function MoviesList() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [selectedMovie, setSelectedMovie] = useState<any | null>(null);
   const [visibleCount, setVisibleCount] = useState(10);
-  const [editMovie, setEditMovie] = useState<any | null>(null); // 👈 for editing state
 
   const loaderRef = useRef<HTMLDivElement>(null);
   const { movies, fetchInitial, fetchMore, hasMore, loading } = useMovieStore();

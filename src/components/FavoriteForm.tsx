@@ -1,8 +1,6 @@
 import React from "react";
 import type { Favorite } from "../types/types";
 import { v4 as uuidv4 } from "uuid";
-import { createFavorite } from "../services/favoritesApi";
-import { useAuth } from "../context/AuthContext";
 
 export default function FavoriteForm({
   form,
@@ -15,7 +13,6 @@ export default function FavoriteForm({
   onSubmit: (e?: React.FormEvent) => void;
   onCancel: () => void;
 }) {
-  const { token } = useAuth();
 
   const handleChange = (
     key: keyof Favorite,

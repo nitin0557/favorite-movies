@@ -62,7 +62,7 @@ export default function Favorites() {
                 className="bg-white shadow p-4 rounded-lg"
               >
                 <img
-                  src={fav.posterUrl}
+                  src={fav.posterUrl ?? ""}
                   alt={fav.title}
                   className="h-48 w-full object-cover rounded"
                 />
@@ -74,7 +74,7 @@ export default function Favorites() {
             return (
               <div key={fav.id} className="bg-white shadow p-4 rounded-lg">
                 <img
-                  src={fav.posterUrl}
+                  src={fav.posterUrl ?? ""}
                   alt={fav.title}
                   className="h-48 w-full object-cover rounded"
                 />

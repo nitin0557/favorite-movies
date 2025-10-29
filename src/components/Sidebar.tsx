@@ -17,8 +17,6 @@ interface SidebarProps {
 
 export default function Sidebar({
   routes,
-  occupiedCount,
-  totalSeats,
   sidebarOpen,
   setSidebarOpen,
 }: SidebarProps) {
