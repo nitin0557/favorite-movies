@@ -211,7 +211,10 @@ const Home: React.FC = () => {
             Nitin
           </span>
           <button className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm md:text-base max-sm:px-2 max-sm:py-1 max-sm:text-xs">
-            <LogoutIcon fontSize="small" />
+            <LogoutIcon fontSize="small"  onClick={() => {
+                localStorage.clear();
+                window.location.href = "/";
+              }}/>
             <span
               className="max-sm:hidden"
               onClick={() => {
