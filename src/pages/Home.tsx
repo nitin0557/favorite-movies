@@ -5,8 +5,10 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { useNavigate } from "react-router-dom";
 
 const tabs = ["Movies", "TV Shows", "Documentaries"];
+const navigate = useNavigate()
 
 const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState("Movies");
@@ -45,6 +47,10 @@ const Home: React.FC = () => {
       posterUrl: imgUrl,
       yearOrTime: year,
     }));
+
+  const handleLogout = () => {
+    navigate("/dashboard")
+  }
 
   useEffect(() => {
     const movieData = {
@@ -214,9 +220,7 @@ const Home: React.FC = () => {
             <LogoutIcon fontSize="small" />
             <span
               className="max-sm:hidden"
-              onClick={() => {
-                window.location.href = "/dashboard";
-              }}
+              onClick={handleLogout}
             >
               Logout
             </span>
